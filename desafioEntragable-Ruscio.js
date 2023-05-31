@@ -1,17 +1,18 @@
 
-const fs = require('fs');
-
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 class ProductManager {
+  static id;
 
     constructor(path) {
       this.path = path;
       this.products = this.leerArchivo();
+      ProductManager.id = this.products.length >0 ? this.products[this.products.length-1].id : 0;
     }
 
     leerArchivo (){
       try {
-        if (fs.existsSync(this.path)) 
-          return JSON.parse(fs.readFileSync(this.path, 'utf8'));
+        if (existsSync(this.path)) 
+          return JSON.parse(readFileSync(this.path, 'utf8'));
         else
         return [];
       } catch (error) {
@@ -34,13 +35,11 @@ class ProductManager {
           console.log(`El codigo ${code} ya se encuentra en el arreglo`);
         }else{
           if (title && description && price && thumbail && code&& stock){
-        // crear el campo id autoincrementable
-        const id = this.products.length + 1;
-          
+                  
         // crear el producto
-        const producto = { id, title, description, price, thumbail, code, stock};
+        const producto = { id: ++ProductManager.id, title, description, price, thumbail, code, stock};
         this.products.push(producto);
-        fs.writeFileSync(this.path, JSON.stringify(this.products));
+        writeFileSync(this.path, JSON.stringify(this.products));
         }else{
           console.log(`no se cuentan con todos los parametros para crear el producto`)
         }}
@@ -52,9 +51,10 @@ class ProductManager {
     getProductById (idProduct){
         const existproducto = this.products.find((e) => e.id === idProduct)
         if(existproducto){
-            console.log(existproducto);
+            return existproducto;
         }else {
-            console.log(`Not found`)
+          let mensaje = `El producto con el ID: ${idProduct} no existe`;
+          return mensaje;
         }
     }
 
@@ -66,7 +66,7 @@ class ProductManager {
           men = `el producto con ID ${idProduct}no existe`;
         else{
           this.products.splice(ind, 1);
-          fs.writeFileSync(this.path, JSON.stringify(this.products));
+          writeFileSync(this.path, JSON.stringify(this.products));
           men = `el producto con ID ${idProduct} fue eliminado`
         }
         return men;
@@ -83,7 +83,7 @@ class ProductManager {
       if(ind > -1){
         const {id, ...rest} = propiedad;
         this.products[ind] = {...this.products[ind], ...rest};
-        fs.writeFileSync(this.path, JSON.stringify(this.products));
+        writeFileSync(this.path, JSON.stringify(this.products));
         men= `el producto con ID ${idProduct} fue modificado exitosamente`;
     }else
       men = `el producto con ID ${idProduct} no existe`;
@@ -96,6 +96,7 @@ class ProductManager {
 
 }
 
-module.exports = {
-  ProductManager
-}
+export default ProductManager;
+/* module.exports = {
+  ProductManager,
+} */
